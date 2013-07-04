@@ -23,7 +23,7 @@ class eZFlowMostVisitedFetch implements eZFlowFetchInterface
         if ( isset( $parameters['Classes'] ) )
         {            
             foreach(explode( ',', $parameters['Classes'] ) as $class) {
-                $subTreeParameters['SortBy'][] = array( 'attribute', true,  $class.'/'.$viewsAttributeIdentifier ); // first the latest                
+                $subTreeParameters['SortBy'][] = array( 'attribute', false,  $class.'/'.$viewsAttributeIdentifier ); // first the latest                
             }
             $subTreeParameters['ClassFilterType'] = 'include';
             $subTreeParameters['ClassFilterArray'] = explode( ',', $parameters['Classes'] );
