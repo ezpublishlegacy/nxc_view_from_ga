@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS nxc_viewscount;CREATE TABLE `nxc_viewscount` (    `id` int(8) NOT NULL AUTO_INCREMENT,    `object_id` int(8) NOT NULL default 0,    `views_count` int(12) NULL default 0,    PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
