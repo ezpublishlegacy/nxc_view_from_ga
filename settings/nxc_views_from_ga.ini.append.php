@@ -3,7 +3,7 @@
 [General]
 ClassList[]
 ClassList[]=article
-ClassList[]=affliliate
+IncludeCountsPattern[]
 AttributeIdentifier=visits
 GAData[]
 GAData[email]=
