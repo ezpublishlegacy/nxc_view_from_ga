@@ -39,7 +39,7 @@ foreach( $classList as $class ) {
         $gaResults = getViewsFromGoogleAnalytics( array($parentNodeUrlsList[$class]), $gaApi, $googleData['profile_id'], $cli);            
     }
     while ($offset < $nodesCount) {
-        $cli->notice( "Current offset is '".$offset."'");
+        $cli->output( "Current offset is '".$offset."'");
         $eZPFetchArray['Offset'] = $offset;
         $nodes = eZContentObjectTreeNode::subTreeByNodeID($eZPFetchArray, 2);
         
