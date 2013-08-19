@@ -34,20 +34,20 @@ foreach( $classList as $class ) {
     $cli->notice( "Processing class '".$class."'");
 
     $nodesCount = eZContentObjectTreeNode::subTreeCountByNodeID($eZPFetchArray,2);
-    $eZPFetchArray['Limit'] = $limit;
-    if (isset($parentNodeUrlsList[$class])) {
-        $gaResults = getViewsFromGoogleAnalytics( array($parentNodeUrlsList[$class]), $gaApi, $googleData['profile_id'], $cli);            
-    }
+    $eZPFetchArray['Limit'] = $limit;    
+    $gaResults = getViewsFromGoogleAnalytics( array($parentNodeUrlsList[$class]), $gaApi, $googleData['profile_id'], $cli);
+    $offset = 0;
     while ($offset < $nodesCount) {
         $cli->output( "Current offset is '".$offset."'");
         $eZPFetchArray['Offset'] = $offset;
         $nodes = eZContentObjectTreeNode::subTreeByNodeID($eZPFetchArray, 2);
         
         foreach( $nodes as $node ) {
+            
             $regPattern = false;
             if (isset($includeCountsPattern[$node->classIdentifier()])) {
                 $regPattern = "/".$node->urlAlias().'/('.$includeCountsPattern[$node->classIdentifier()].')?';
-            }        
+            }
             if (isset($gaResults["/".$node->urlAlias()]) || 
                 ($regPattern && preg_grep_keys($regPattern, $gaResults)) ) {
                     if ($regPattern) { 
@@ -62,12 +62,12 @@ foreach( $classList as $class ) {
                         $nodeDM[$attributeIdentifier]->fromString($gaResults["/".$node->urlAlias()]);
                         $nodeDM[$attributeIdentifier]->store();
                         $node->store();
-                        $cli->output( "Updated views for '".$node->urlAlias()."'; set to '".$gaResults["/".$node->urlAlias()]."'" );
+                        $cli->output( "Updated views for '".$node->urlAlias()."(".$node->NodeID.")'; set to '".$gaResults["/".$node->urlAlias()]."'" );
                     }
             }
             else {            
                 //$cli->warning( "No views for '".$node->urlAlias()."'");            
-            }
+            }            
         }
 
         $offset += $limit;
@@ -77,14 +77,14 @@ foreach( $classList as $class ) {
 function getViewsFromGoogleAnalytics( $urlArray, $ga, $profileId, $cli ) {
     
     $filter = "ga:pagePath=~^/".implode(" || ga:pagePath=~^/",$urlArray);
-    $result = array();
+    $result = array();    
     
     try {
         $results = $ga->data_ga->get(
         'ga:'.$profileId,
         '2013-06-01',
         date("Y-m-d"),
-        'ga:visits',
+        'ga:pageviews',
         array(
             'dimensions'    => 'ga:pagePath',
             'sort'          => 'ga:pagePath',
