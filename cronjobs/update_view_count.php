@@ -21,7 +21,7 @@ $cli->setUseStyles( true );
 $cli->setIsQuiet($isQuiet);
 
 $cli->output( "Updating views count from Google Analitics" );
-$cli->notice( "Limit set to '".$limit."'");
+$cli->output( "Limit set to '".$limit."'");
 
 $offset = 0;
 $eZPFetchArray = array();
@@ -31,7 +31,7 @@ $eZPFetchArray['ClassFilterType'] = 'include';
 $gaApi = getGoogleClient( $googleData );
 foreach( $classList as $class ) {
     $eZPFetchArray['ClassFilterArray'] = array($class);
-    $cli->notice( "Processing class '".$class."'");
+    $cli->output( "Processing class '".$class."'");
 
     $nodesCount = eZContentObjectTreeNode::subTreeCountByNodeID($eZPFetchArray,2);
     $eZPFetchArray['Limit'] = $limit;    
