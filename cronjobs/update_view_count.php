@@ -34,35 +34,36 @@ foreach( $classList as $class ) {
     $cli->output( "Processing class '".$class."'");
 
     $nodesCount = eZContentObjectTreeNode::subTreeCountByNodeID($eZPFetchArray,2);
-    $eZPFetchArray['Limit'] = $limit;    
-    $gaResults = getViewsFromGoogleAnalytics( array($parentNodeUrlsList[$class]), $gaApi, $googleData['profile_id'], $cli);
+    $eZPFetchArray['Limit'] = $limit;
+    $gaResults = getViewsFromGoogleAnalytics( array($parentNodeUrlsList[$class]), $gaApi, $googleData['profile_id'], $cli);    
     $offset = 0;
     while ($offset < $nodesCount) {
         $cli->output( "Current offset is '".$offset."'");
         $eZPFetchArray['Offset'] = $offset;
-        $nodes = eZContentObjectTreeNode::subTreeByNodeID($eZPFetchArray, 2);
-        
+        $nodes = eZContentObjectTreeNode::subTreeByNodeID($eZPFetchArray, 2);        
         foreach( $nodes as $node ) {
-            
+            $nodeUrl = $node->urlAlias();            
+            eZURI::transformURI($nodeUrl);            
             $regPattern = false;
             if (isset($includeCountsPattern[$node->classIdentifier()])) {
-                $regPattern = "/".$node->urlAlias().'/('.$includeCountsPattern[$node->classIdentifier()].')?';
-            }
-            if (isset($gaResults["/".$node->urlAlias()]) || 
-                ($regPattern && preg_grep_keys($regPattern, $gaResults)) ) {
-                    if ($regPattern) { 
-                        combineViews( $gaResults, "/".$node->urlAlias(), $regPattern);
+                $regPattern = $nodeUrl.$includeCountsPattern[$node->classIdentifier()];
+            }            
+            
+            if (isset($gaResults[$nodeUrl]) ||
+                ($regPattern && preg_grep_keys($regPattern, $gaResults)) ) {                    
+                    if ($regPattern) {
+                        combineViews( $gaResults, $nodeUrl, $regPattern);
                     }
                     $nodeDM = $node->DataMap();
                     if (!isset($nodeDM[$attributeIdentifier])) {
-                        $cli->error("No attribute '".$attributeIdentifier."' for node '".$node->urlAlias());
+                        $cli->error("No attribute '".$attributeIdentifier."' for node '".$nodeUrl);
                         continue;
                     }
                     else {
-                        $nodeDM[$attributeIdentifier]->fromString($gaResults["/".$node->urlAlias()]);
+                        $nodeDM[$attributeIdentifier]->fromString($gaResults[$nodeUrl]);
                         $nodeDM[$attributeIdentifier]->store();
                         $node->store();
-                        $cli->output( "Updated views for '".$node->urlAlias()."(".$node->NodeID.")'; set to '".$gaResults["/".$node->urlAlias()]."'" );
+                        $cli->output( "Updated views for '".$nodeUrl."' with id (".$node->NodeID."); set to '".$gaResults[$nodeUrl]."'" );
                     }
             }
             else {            
@@ -108,9 +109,8 @@ function getViewsFromGoogleAnalytics( $urlArray, $ga, $profileId, $cli ) {
     return $result;
 }
 
-function combineViews( &$results, $url, $pattern ) {
-    $pattern = str_replace('/', '\/', $url);
-    $res = preg_grep_keys('/'.$pattern.'/', $results);    
+function combineViews( &$results, $url, $pattern ) {    
+    $res = preg_grep_keys($url, $results);    
     $results[$url] = 0;
         
     foreach ($res as $rUrl => $rVisits) {
@@ -122,12 +122,13 @@ function combineViews( &$results, $url, $pattern ) {
 
 function preg_grep_keys( $pattern, $input, $flags = 0 )
 {
-    $keys = preg_grep( $pattern, array_keys( $input ), $flags );
+    $pattern = str_replace('/', '\/', $pattern);
+    $keys = preg_grep( "/".$pattern."/i", array_keys( $input ), $flags );
     $vals = array();
     foreach ( $keys as $key )
-    {
+    {        
         $vals[$key] = $input[$key];
-    }
+    }    
     return $vals;
 }
 
